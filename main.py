@@ -10,7 +10,7 @@ TELEGRAM_TOKEN = "8637130007:AAHwNRSwfjZQcfYDoGNKWjuIiBYB8at8fvI"
 # Admin Listesi
 ADMIN_IDS = [8416720490, 8382929624, 652932220, 7094870780]
 
-# Başlangıç Kara Listesi (ID: İsim)
+# Başlangıç Kara Listesi
 BLACKLIST = {
     5177820294: "Octopus Game TR",
     1858358799: "Bilinmeyen Bot 1",
@@ -21,13 +21,17 @@ BANNED_KEYWORDS = [
     "kanalımıza", "kanalına", "grubuna", "grubumuza", "davetlisiniz"
 ]
 
-# --- 2. REKLAM ENGELLEME MANTIĞI (GRUPLAR İÇİN) ---
+# --- 2. YARDIMCI FONKSİYONLAR ---
+
+def is_admin(user_id):
+    return user_id in ADMIN_IDS
+
+# --- 3. REKLAM ENGELLEME (GRUPLAR İÇİN) ---
 
 async def delete_octopus_ads(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     user = update.effective_user
     
-    # Özel mesajları bu fonksiyonda işlemeyelim, sadece gruplar
     if not msg or not user or update.effective_chat.type == 'private':
         return
         
@@ -39,31 +43,40 @@ async def delete_octopus_ads(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if has_link or has_keyword:
             try:
                 await msg.delete()
-            except Exception as e:
-                print(f"Silme hatası: {e}")
+            except:
+                pass
 
-# --- 3. ADMİN YÖNETİM SİSTEMİ (ÖZEL MESAJLAR İÇİN) ---
+# --- 4. ADMİN YÖNETİM SİSTEMİ (ÖZEL MESAJLAR İÇİN) ---
 
-async def unauthorized_check(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Admin olmayan biri bota özelden yazarsa uyarır."""
-    if update.effective_chat.type == 'private' and update.effective_user.id not in ADMIN_IDS:
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Botun ilk etkileşimini yönetir."""
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
         await update.message.reply_text("⛔ Bu bot üzerinde herhangi bir yetkin bulunmuyor. Erişim reddedildi.")
         return
+    
+    await update.message.reply_text(
+        "🖐 Selam Zenithar ve ekibi! Reklam avcısı sistemine hoş geldiniz.\n"
+        "Komutları görmek için `/komutlar` yazabilirsiniz.",
+        parse_mode="Markdown"
+    )
 
 async def komutlar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Adminlere bot kullanımını anlatır."""
-    if update.effective_user.id not in ADMIN_IDS: return
+    """Rehber mesajı."""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("⛔ Yetkisiz erişim.")
+        return
     
     rehber = (
-        "🛡 ZENITHAR ANTI-AD BOT KOMUTLARI\n\n"
-        "🔹 /engelle BOT_ID` : reklam atan bir hesabı ya da botu kara listeye ekler.\n"
-        "🔹 /liste` : Şu anki kara listeyi sıralı şekilde getşrir.\n"
-        "🔹 /izinver SIRA_NO` : Listeden birini çıkarmak için sıra numarasını yaz.\n"
+        "🛡 ZenithAD Blocker kullanım rehberi:\n\n"
+        "🔹 `/engelle BOT_ID` : Yeni bir botu kara listeye ekler.\n"
+        "🔹 `/liste` : Mevcut kara listeyi sıralı gösterşr.\n"
+        "🔹 `/izinver SIRA_NO` : Listeden bir botu çıkartır.\n"
     )
     await update.message.reply_text(rehber, parse_mode="Markdown")
 
 async def engelle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id not in ADMIN_IDS: return
+    if not is_admin(update.effective_user.id): return
     if not context.args:
         await update.message.reply_text("❌ Kullanım: `/engelle 123456789`", parse_mode="Markdown")
         return
@@ -79,21 +92,21 @@ async def engelle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BLACKLIST[new_id] = bot_name
         await update.message.reply_text(f"✅ {bot_name} kara listeye eklendi.", parse_mode="Markdown")
     except ValueError:
-        await update.message.reply_text("❌ Geçersiz ID formatı.")
+        await update.message.reply_text("❌ Geçersiz ID. Sadece sayı girin.")
 
 async def liste_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id not in ADMIN_IDS: return
+    if not is_admin(update.effective_user.id): return
     if not BLACKLIST:
-        await update.message.reply_text("📭 Kara liste şu an tertemiz.")
+        await update.message.reply_text("📭 Kara liste boş.")
         return
 
-    res = "🚫 **AKTİF KARA LİSTE**\n\n"
+    res = "🚫 **KARA LİSTE**\n\n"
     for i, (b_id, name) in enumerate(BLACKLIST.items(), 1):
         res += f"{i}. {name} - `{b_id}`\n"
     await update.message.reply_text(res, parse_mode="Markdown")
 
 async def izinver_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id not in ADMIN_IDS: return
+    if not is_admin(update.effective_user.id): return
     if not context.args:
         await update.message.reply_text("❌ Kullanım: `/izinver 1`", parse_mode="Markdown")
         return
@@ -104,30 +117,36 @@ async def izinver_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if 0 < rank <= len(keys):
             target_id = keys[rank - 1]
             removed_name = BLACKLIST.pop(target_id)
-            await update.message.reply_text(f"🔓 **{removed_name}** affedildi, listeden çıkarıldı.", parse_mode="Markdown")
+            await update.message.reply_text(f"🔓 **{removed_name}** listeden çıkartıldı.", parse_mode="Markdown")
         else:
-            await update.message.reply_text("❌ Liste numarasını yanlış girdin.")
+            await update.message.reply_text("❌ Geçersiz sıra numarası.")
     except ValueError:
-        await update.message.reply_text("❌ Lütfen sadece sayı gir.")
+        await update.message.reply_text("❌ Sayı girin.")
 
-# --- 4. ANA ÇALIŞTIRICI ---
+async def catch_unauthorized_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin olmayanların attığı her türlü mesajı (özelde) yakalar."""
+    if update.effective_chat.type == 'private' and not is_admin(update.effective_user.id):
+        await update.message.reply_text("⛔ Bu bot üzerinde herhangi bir yetkin bulunmuyor. Erişim reddedildi.")
+
+# --- 5. ANA ÇALIŞTIRICI ---
 
 def main():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
-    # Komutlar
-    app.add_handler(CommandHandler("komutlar", komutlar_command, filters=filters.ChatType.PRIVATE))
-    app.add_handler(CommandHandler("engelle", engelle_command, filters=filters.ChatType.PRIVATE))
-    app.add_handler(CommandHandler("liste", liste_command, filters=filters.ChatType.PRIVATE))
-    app.add_handler(CommandHandler("izinver", izinver_command, filters=filters.ChatType.PRIVATE))
+    # 1. Öncelik: /start ve /komutlar (Admin kontrolü içlerinde yapılıyor)
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("komutlar", komutlar_command))
+    app.add_handler(CommandHandler("engelle", engelle_command))
+    app.add_handler(CommandHandler("liste", liste_command))
+    app.add_handler(CommandHandler("izinver", izinver_command))
     
-    # Özel mesajda admin olmayanları yakalayan handler (Komut olmayan her şey için)
-    app.add_handler(MessageHandler(filters.ChatType.PRIVATE & (~filters.COMMAND), unauthorized_check))
+    # 2. Öncelik: Özel mesajda admin olmayanların HER ŞEYİNİ yakala (Komut dahil)
+    app.add_handler(MessageHandler(filters.ChatType.PRIVATE, catch_unauthorized_messages), group=1)
     
-    # Gruplarda reklam silen handler
-    app.add_handler(MessageHandler(filters.ChatType.GROUPS & filters.ALL, delete_octopus_ads))
+    # 3. Öncelik: Gruplarda reklam silme
+    app.add_handler(MessageHandler(filters.ChatType.GROUPS & filters.ALL, delete_octopus_ads), group=2)
     
-    print("Anti-Reklam Sistemi v2.1 Yayında. Adminler yetkilendirildi.")
+    print("Reklam Avcısı v2.2 Çalışıyor. Admin kontrolü sıkılaştırıldı.")
     app.run_polling()
 
 if __name__ == "__main__":
