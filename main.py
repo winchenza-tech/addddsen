@@ -3,7 +3,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
 # Ayarlar
-TELEGRAM_TOKEN = "BURAYA_YENI_BOTUNUN_TOKENINI_YAZ"
+TELEGRAM_TOKEN = "8637130007:AAHwNRSwfjZQcfYDoGNKWjuIiBYB8at8fvI"
 TARGET_BOT_ID = 5177820294
 
 # Yasaklı kelimeler listesi
