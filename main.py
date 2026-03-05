@@ -18,7 +18,8 @@ async def delete_octopus_ads(update: Update, context: ContextTypes.DEFAULT_TYPE)
         text = msg.text or msg.caption or ""
         text_lower = text.lower()
  
-        has_link = bool(re.search(r't\.me/\S+', text_lower))
+        # https://, http:// olsa da olmasa da tüm t.me/ linklerini acımadan yakalar
+        has_link = bool(re.search(r'(?:https?://)?t\.me/\S+', text_lower))
  
         has_keyword = any(keyword in text_lower for keyword in BANNED_KEYWORDS)
 
