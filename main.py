@@ -4,7 +4,7 @@ from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filte
 
 TELEGRAM_TOKEN = "8637130007:AAHwNRSwfjZQcfYDoGNKWjuIiBYB8at8fvI"
 # Artık birden fazla ID'yi hedef alabiliyoruz
-TARGET_BOT_IDS = [5177820294, 8416720490] 
+TARGET_BOT_IDS = [5177820294, 1858358799, 7818025361, 7818025361] 
 BANNED_KEYWORDS = [
     "kanalımıza", "kanalına", "grubuna", "grubumuza", "davetlisiniz"
 ]
