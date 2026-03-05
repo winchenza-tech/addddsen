@@ -13,8 +13,8 @@ ADMIN_IDS = [8416720490, 8382929624, 652932220, 7094870780]
 # Başlangıç Kara Listesi
 BLACKLIST = {
     5177820294: "Octopus Game TR",
-    1858358799: "Bilinmeyen Bot 1",
-    7818025361: "Bilinmeyen Bot 2"
+    1858358799: "Crocodile Premium Bot",
+    7818025361: "Fullsave Bot"
 }
 
 BANNED_KEYWORDS = [
@@ -117,7 +117,7 @@ async def izinver_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if 0 < rank <= len(keys):
             target_id = keys[rank - 1]
             removed_name = BLACKLIST.pop(target_id)
-            await update.message.reply_text(f"🔓 **{removed_name}** listeden çıkartıldı.", parse_mode="Markdown")
+            await update.message.reply_text(f"🔓{removed_name} listeden çıkartıldı.", parse_mode="Markdown")
         else:
             await update.message.reply_text("❌ Geçersiz sıra numarası.")
     except ValueError:
@@ -126,7 +126,7 @@ async def izinver_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def catch_unauthorized_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Admin olmayanların attığı her türlü mesajı (özelde) yakalar."""
     if update.effective_chat.type == 'private' and not is_admin(update.effective_user.id):
-        await update.message.reply_text("⛔ Bu bot üzerinde herhangi bir yetkin bulunmuyor. Erişim reddedildi.")
+        await update.message.reply_text("⛔ Bu bot üzerinde herhangi bir yetkin bulunmuyor. Erişim reddedildi. Bir hata olduğunu düşünüyorsan @eskidenyesil")
 
 # --- 5. ANA ÇALIŞTIRICI ---
 
