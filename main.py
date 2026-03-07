@@ -51,7 +51,7 @@ async def delete_octopus_ads(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # "davetlisiniz" kelimesinin tüm varyasyonlarını yakalamak için kontrol
         # hem davetlisiniz hem de davetlisiniz (i/ı farkı) taranır
         has_keyword = any(keyword in text_lower for keyword in [
-            "davetlisiniz", "davetlisiniz", "kanal", "grubumuza", "grubuna"
+            "davetlisiniz", "davetlisiniz", "kanal", "grubumuza", "grubuna, katılabilirsiniz"
         ])
 
         if has_link or has_keyword:
