@@ -13,7 +13,8 @@ ADMIN_IDS = [8416720490, 8382929624, 652932220, 7094870780]
 BLACKLIST = {
     5177820294: "Octopus Game TR",
     1858358799: "Bilinmeyen Bot 1",
-    7818025361: "Bilinmeyen Bot 2"
+    7818025361: "Bilinmeyen Bot 2",
+    7495125802: "Test Hesabı"  # <-- Yeni eklediğimiz ID
 }
 
 # Yasaklı kelimeler (Küçük harf olarak kontrol edilecek, tekrarlar temizlendi)
