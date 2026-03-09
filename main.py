@@ -14,10 +14,10 @@ BLACKLIST = {
     5177820294: "Octopus Game TR",
     1858358799: "Bilinmeyen Bot 1",
     7818025361: "Bilinmeyen Bot 2",
-    7495125802: "Test Hesabı"  # <-- Yeni eklediğimiz ID
+    7495125802: "Test Hesabı"  
 }
 
-# Yasaklı kelimeler (Küçük harf olarak kontrol edilecek, tekrarlar temizlendi)
+# Yasaklı kelimeler
 BANNED_KEYWORDS = [
     "kanalımıza", "kanalına", "kanal", 
     "grubuna", "grubumuza", 
@@ -37,34 +37,29 @@ async def delete_octopus_ads(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if not msg or not user or update.effective_chat.type == 'private':
         return
         
-    # Adminlerin mesajlarına dokunma ve kontrolü atla
+    # Adminlerin mesajlarına dokunma
     if is_admin(user.id):
         return
 
-    # DURUM 1: Kullanıcı kara listedeyse koşulsuz şartsız mesajını sil
-    if user.id in BLACKLIST:
-        try:
-            await msg.delete()
-            print(f"Kara Liste Silinmesi: {user.id} ({BLACKLIST[user.id]})")
-        except Exception as e:
-            print(f"Silme Hatası (Kara Liste): {e}")
-        return # İşlemi bitir, metin aramaya gerek kalmadı
+    # ÖNEMLİ: Sadece kara listedeki kişileri/botları kontrol et. 
+    # Normal bir üyeyse işlemi burada bitir ve mesaja izin ver.
+    if user.id not in BLACKLIST:
+        return
 
-    # DURUM 2: Kara listede değilse, metin içeriğini kontrol et
     text = (msg.text or msg.caption or "")
     if not text:
         return
 
-    # Regex ile link arama: t.me/ veya telegram.me/ yakalar
-    has_link = bool(re.search(r'(t\.me|telegram\.me)\/', text, re.IGNORECASE))
+    # Çok daha güçlü Regex: Kelime içi, emoji arası veya boşluklu yazılan linkleri affetmez
+    # Örn: "gel😊t . me / link😊gel" veya "http://telegram.me/"
+    link_pattern = r'(?:https?:\/\/)?(?:t\s*\.\s*m\s*e|telegram\s*\.\s*m\s*e)\s*\/'
+    has_link = bool(re.search(link_pattern, text, re.IGNORECASE))
     
-    # Kelime kontrolü için Türkçe karakterleri normalize et ve küçük harfe çevir
+    # Kelime kontrolü: "kanalımıza" kelimesi cümlenin veya emojilerin neresinde olursa olsun yakalar
     text_lower = text.lower().replace('İ', 'i').replace('I', 'ı')
-    
-    # Yasaklı kelimelerden herhangi biri metinde geçiyor mu?
     has_keyword = any(keyword in text_lower for keyword in BANNED_KEYWORDS)
 
-    # Eğer link veya yasaklı kelime varsa sil
+    # Kişi kara listede VE (link veya yasaklı kelime kullanmış). Sil!
     if has_link or has_keyword:
         try:
             await msg.delete()
@@ -105,7 +100,7 @@ async def engelle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             bot_name = f"Bilinmeyen ({new_id})"
             
         BLACKLIST[new_id] = bot_name
-        await update.message.reply_text(f"✅ {bot_name} kara listeye eklendi.")
+        await update.message.reply_text(f"✅ {bot_name} şüpheli listesine eklendi. Sadece reklam atarsa silinecek.")
     except ValueError:
         await update.message.reply_text("❌ Geçersiz ID. Lütfen rakamlardan oluşan bir ID girin.")
 
@@ -155,7 +150,7 @@ def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE, catch_unauthorized_messages), group=1)
     app.add_handler(MessageHandler(filters.ChatType.GROUPS & filters.ALL, delete_octopus_ads), group=2)
     
-    print("Bot aktif. Regex, kelime filtresi ve kara liste sistemi devrede.")
+    print("Bot aktif. Emoji ve boşluklu kelimeleri delen güçlü regex devrede.")
     app.run_polling()
 
 if __name__ == "__main__":
