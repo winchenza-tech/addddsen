@@ -2,10 +2,13 @@ app = "addddsen-winchenzab"
 primary_region = "ams"
 
 [build]
-# builder:base yerine güncel Jammy base imajını kullanıyoruz
-builder = "paketobuildpacks/builder-jammy-base"
+  builder = "paketobuildpacks/builder-jammy-base"
+
+# Sadece bu kısmı tutuyoruz, ağ ayarlarını siliyoruz
+[processes]
+  app = "python main.py"
 
 [[vm]]
-cpu_kind = "shared"
-cpus = 1
-memory_mb = 512
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
