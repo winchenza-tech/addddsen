@@ -2,7 +2,8 @@ app = "addddsen"
 primary_region = "ams"
 
 [build]
-builder = "paketobuildpacks/builder:base"
+# builder:base yerine güncel Jammy base imajını kullanıyoruz
+builder = "paketobuildpacks/builder-jammy-base"
 
 [[vm]]
 cpu_kind = "shared"
